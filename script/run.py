@@ -54,7 +54,8 @@ def format_tool(item):
         item['toolShortDescription'].replace('|', ' '),
         '[{}]({})'.format('visit website', item['websiteUrl']),
         '![]({})'.format(image) if image else '',
-        ' '.join(['`{}`'.format(p) for p in item['pricing']]),
+        item.get('startingPrice', ''),
+        # ' '.join(['`{}`'.format(p) for p in item['pricing']]),
         ' '.join(['`{}`'.format(c['categoryName']) for c in item['toolCategories']]),
     )
 
