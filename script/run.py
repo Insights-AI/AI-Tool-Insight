@@ -42,10 +42,18 @@ async def get_recent(*args, **kwargs):
 
 
 def format_tool(item):
+    try:
+        ref = item['mainImage'].get('asset', {}).get('_ref', '').split('-')
+        image = 'https://cdn.sanity.io/images/u0v1th4q/production/{}-{}.{}?w=640&h=334&auto=format&q=75'.format(ref[1], ref[2], ref[3])
+    except Exception as e:
+        logging.error(e)
+        image = ''
+
     return '|{}|{}|{}|{}|{}|'.format(
         item['toolName'],
         item['toolShortDescription'],
         '[{}]({})'.format('visit website', item['websiteUrl']),
+        '![]({})'.format(image) if image else '',
         ' '.join(['`{}`'.format(p) for p in item['pricing']]),
         ' '.join(['`{}`'.format(c['categoryName']) for c in item['toolCategories']]),
     )
