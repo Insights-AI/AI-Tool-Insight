@@ -50,8 +50,8 @@ def format_tool(item):
         image = ''
 
     return '|{}|{}|{}|{}|{}|{}|'.format(
-        item['toolName'],
-        item['toolShortDescription'],
+        item['toolName'].replace('|', ' '),
+        item['toolShortDescription'].replace('|', ' '),
         '[{}]({})'.format('visit website', item['websiteUrl']),
         '![]({})'.format(image) if image else '',
         ' '.join(['`{}`'.format(p) for p in item['pricing']]),
@@ -61,6 +61,7 @@ def format_tool(item):
 
 async def get_all_content(executor):
     page = 1
+    res = []
     while page > 0:
         result = await executor(page)
         if len(result) == 0:
@@ -72,7 +73,9 @@ async def get_all_content(executor):
         # test
         # page = -1
         for item in result:
+            res.append(item)
             yield item
+    json.dump(res, open('tools.json', 'w+'))
 
 
 async def main():
