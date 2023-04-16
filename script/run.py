@@ -49,12 +49,13 @@ def format_tool(item):
         logging.error(e)
         image = ''
 
+    price = item.get('startingPrice', '')
     return '|{} |{} |{} |{} |{} |{} |'.format(
         item['toolName'].replace('|', ' '),
         item['toolShortDescription'].replace('|', ' '),
         '[{}]({})'.format('visit website', item['websiteUrl']),
         '![]({})'.format(image) if image else '',
-        item.get('startingPrice', ''),
+        '$ {}'.format(price) if price else '',
         # ' '.join(['`{}`'.format(p) for p in item['pricing']]),
         ' '.join(['`{}`'.format(c['categoryName']) for c in item['toolCategories']]),
     )
