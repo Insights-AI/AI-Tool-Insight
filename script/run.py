@@ -49,7 +49,7 @@ def format_tool(item):
         logging.error(e)
         image = ''
 
-    return '|{}|{}|{}|{}|{}|{}|'.format(
+    return '|{} |{} |{} |{} |{} |{} |'.format(
         item['toolName'].replace('|', ' '),
         item['toolShortDescription'].replace('|', ' '),
         '[{}]({})'.format('visit website', item['websiteUrl']),
