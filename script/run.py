@@ -3,6 +3,7 @@ import logging
 from io import StringIO
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from tornado.ioloop import IOLoop
+from pyquery import PyQuery
 
 
 
@@ -26,15 +27,28 @@ https://www.futurepedia.io/api/getPosts?page=1&sort=New&time=Today
 """
 
 
-async def get_post_by_page(page, sort="New", time="Today"):
+async def get_recent(*args, **kwargs):
     try:
-        url = 'https://www.futurepedia.io/api/getPosts?page={}&sort={}&time={}'.format(page, sort, time)
+        url = 'https://www.futurepedia.io/recent'
         response = await AsyncHTTPClient().fetch(HTTPRequest(url))
-        return json.loads(response.body.decode())
+        query = PyQuery(response.body.decode())
+        script_content = query('#__NEXT_DATA__').text()
+        # return json.loads(script_content)['props']['pageProps']['todayTools']
+        for item in json.loads(script_content)['props']['pageProps']['todayTools']:
+            yield item
     except Exception as e:
         logging.exception(e)
-        return []
+        # return []
 
+
+def format_tool(item):
+    return '|{}|{}|{}|{}|{}|'.format(
+        item['toolName'],
+        item['toolShortDescription'],
+        '[{}]({})'.format('visit website', item['websiteUrl']),
+        ' '.join(['`{}`'.format(p) for p in item['pricing']]),
+        ' '.join(['`{}`'.format(c['categoryName']) for c in item['toolCategories']]),
+    )
 
 
 async def get_all_content(executor):
@@ -63,32 +77,20 @@ website：https://www.aitoolinsight.com
 Join the Discord community and discuss the most cutting-edge information with experts and enthusiasts in the field of AI technology! Here, you can experience the most advanced artificial intelligence technology, communicate with like-minded people, and jointly improve your knowledge level. Whether you are a professional or a hobbyist, welcome to join our community!  
 👉 https://discord.gg/xZj9Px7Xvd
 ## 🔥What's new today
-| Name | website | category |
-|---|---|---|
-""")
-    async for item in get_all_content(get_post_by_page):
+| Name | Description | Website | Screenshot | Pricing | Category |
+|---|---|---|---|---|---|""")
+    async for item in get_recent():
         # print(item['_id'], item['title'])
-        print('|{}|{}|{}|'.format(
-            item['title'],
-            '[{}]({})'.format('visit website', item['articleLink']),
-            ' '.join(['`{}`'.format(c) for c in item['categories']])
-        ))
+        print(format_tool(item))
 
     # print('--------------')
     print("""
 ## 📖All AI Tools
-| Name | Description | website | screenshot | category |
-|---|---|---|---|---|
-""")
+| Name | Description | Website | Screenshot | Pricing | Category |
+|---|---|---|---|---|---|""")
     async for item in get_all_content(get_tools_by_page):
         # print(item['_id'], item['toolName'])
-        print('|{}|{}|{}|{}|{}|'.format(
-            item['toolName'],
-            item['toolShortDescription'],
-            '[{}]({})'.format('visit website', item['websiteUrl']),
-            "",
-            ' '.join(['`{}`'.format(c) for c in item['tagsIndex']])
-        ))
+        print(format_tool(item))
 
 
 if __name__ == "__main__":
