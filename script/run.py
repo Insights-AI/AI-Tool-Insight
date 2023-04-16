@@ -54,8 +54,7 @@ async def get_all_content(executor):
 
 
 async def main():
-    out = StringIO()
-    out.write("""# AI-Tool-Insight
+    print("""# AI-Tool-Insight
 
 AI Tool Insight aims to provide you with the latest AI information and help create infinite possibilities in the future
 Daily updates, welcome everyone to come and see what new and interesting AI tools are available every day  
@@ -68,33 +67,28 @@ Join the Discord community and discuss the most cutting-edge information with ex
 |---|---|---|
 """)
     async for item in get_all_content(get_post_by_page):
-        print(item['_id'], item['title'])
-        out.write('|{}|{}|{}|\n'.format(
+        # print(item['_id'], item['title'])
+        print('|{}|{}|{}|'.format(
             item['title'],
             '[{}]({})'.format('visit website', item['articleLink']),
             ' '.join(['`{}`'.format(c) for c in item['categories']])
         ))
 
-    print('--------------')
-    out.write("""
+    # print('--------------')
+    print("""
 ## 📖All AI Tools
 | Name | Description | website | screenshot | category |
 |---|---|---|---|---|
 """)
     async for item in get_all_content(get_tools_by_page):
-        print(item['_id'], item['toolName'])
-        out.write('|{}|{}|{}|{}|{}|\n'.format(
+        # print(item['_id'], item['toolName'])
+        print('|{}|{}|{}|{}|{}|'.format(
             item['toolName'],
             item['toolShortDescription'],
             '[{}]({})'.format('visit website', item['websiteUrl']),
             "",
             ' '.join(['`{}`'.format(c) for c in item['tagsIndex']])
         ))
-
-    print(out.getvalue())
-
-
-
 
 
 if __name__ == "__main__":
