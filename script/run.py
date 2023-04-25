@@ -1,5 +1,6 @@
 import asyncio
 import nest_asyncio
+import shelve
 import json
 import logging
 from io import StringIO
@@ -242,7 +243,10 @@ https://www.futurepedia.io/api/tools?page=2&sort=new
 async def get_tools_by_page(page, sort="new"):
     try:
         url = 'https://www.futurepedia.io/api/tools?page={}&sort={}'.format(page, sort)
-        response = await AsyncHTTPClient().fetch(HTTPRequest(url))
+        response = await AsyncHTTPClient().fetch(HTTPRequest(
+            url,
+            request_timeout=200,
+        ))
         return json.loads(response.body.decode())
     except Exception as e:
         logging.exception(e)
@@ -380,7 +384,7 @@ async def crawler_new_tools(api):
         await save_tool_item(api, item)
 
 
-async def main():
+async def feishu():
     api = FeishuAPI(app_token='E83SbLGvFagFJesF1vRcSKfsnzf', table_id='tblSjKC6GgcchXcg')
     # await api.save_tags(await api.get_tags())
     await crawler_recent_tools(api)
@@ -388,19 +392,23 @@ async def main():
     # await api.save_tags(await api.get_tags())
     # await crawler_all_tools(api)
     await crawler_new_tools(api)
-    # tools = await gather(api.get_tools_by_sheet())
-    # print(tools)
-    # text = await api.translate('AI-Powered Cloud based Platform that \u200b\u200b Simplifies Brand Control')
-    # print(text)
-    # file_token = await api.get_file_token(
-    #     'https://cdn.sanity.io/images/u0v1th4q/production/870ddad556846f339120b43a724183a3c6795f94-1866x811.png?w=640&h=334&auto=format&q=75',
-    #     'brndaddo.png',
-    # )
-    # print(file_token)
-    # await FeishuAPI().add_record(Name='test', Website={'link': 'https://baidu.com', 'text': 'view website'})
-    # tools = await gather(FeishuAPI().get_tools_by_sheet())
-    # print(tools)
     return
+
+
+async def crawler():
+    with shelve.open('aitool.db', flag='c') as db:
+        count = 0
+        async for item in get_all_content(get_tools_by_page):
+            count += 1
+            if count % 10 == 0:
+                print(count)
+            if db.get(item['_id']):
+                break
+            db[item['_id']] = item
+        print(count)
+
+
+async def main():
     print("""# AI-Tool-Insight
 
 AI Tool Insight aims to provide you with the latest AI information and help create infinite possibilities in the future
@@ -431,6 +439,8 @@ if __name__ == "__main__":
     define('APP_ID', default='')
     define('APP_SECRET', default='')
     parse_command_line()
-    asyncio.run(main())
+    asyncio.run(crawler())
+    # asyncio.run(feishu())
+    # asyncio.run(main())
 
 
